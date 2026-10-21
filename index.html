@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Questionário 22 ou 13</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: uma "urna" centralizada — painel claro com visor; uma pergunta por tela, dois botões grandes, barra de progresso no topo. */
+:root{
+  --bg:#e9e7e1;        /* cinza-areia do gabinete da urna */
+  --panel:#f7f6f2;     /* visor */
+  --fg:#1c1b19;
+  --muted:#6b6962;
+  --line:#cfccc3;
+  --accent:#0f6b4a;    /* verde da tecla CONFIRMA */
+  --accent-fg:#ffffff;
+  --sim:#1c1b19; --sim-fg:#f7f6f2;
+  --nao:#f7f6f2; --nao-fg:#1c1b19;
+  --font-display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#1a1917; --panel:#26241f; --fg:#f1efe8; --muted:#a39f93; --line:#45423a;
+  --accent:#3fb384; --accent-fg:#0d1a14;
+  --sim:#f1efe8; --sim-fg:#1a1917; --nao:#26241f; --nao-fg:#f1efe8; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#1a1917; --panel:#26241f; --fg:#f1efe8; --muted:#a39f93; --line:#45423a;
+  --accent:#3fb384; --accent-fg:#0d1a14;
+  --sim:#f1efe8; --sim-fg:#1a1917; --nao:#26241f; --nao-fg:#f1efe8; color-scheme:dark }
+
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:18px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px;
+  display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.urna{width:100%;max-width:560px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.12);overflow:hidden;display:flex;flex-direction:column;min-height:min(620px,92vh)}
+.topo{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:16px 22px 10px;font-family:var(--font-display);
+  font-stretch:90%;text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--muted)}
+.topo b{color:var(--fg);font-weight:800;font-variant-numeric:tabular-nums}
+.progresso{height:6px;background:var(--line);margin:0 22px;border-radius:3px;overflow:hidden}
+.progresso i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
+.tela{flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:28px 22px 26px;min-width:0}
+.num{font-family:var(--font-display);font-weight:900;font-size:56px;line-height:1;font-stretch:80%;color:var(--accent)}
+h1,h2{margin:0;font-family:var(--font-display);text-wrap:balance}
+h1{font-size:clamp(28px,6vw,40px);font-weight:900;line-height:1.08;font-stretch:85%}
+h2{font-size:clamp(22px,4.6vw,27px);font-weight:700;line-height:1.25}
+p{margin:0;max-width:60ch}
+.muted{color:var(--muted);font-size:16px}
+.botoes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:2px solid var(--fg);padding:18px 12px;font-family:var(--font-display);
+  font-weight:800;font-size:22px;letter-spacing:.04em;text-transform:uppercase;transition:transform .08s ease}
+button:active{transform:scale(.97)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.b-sim{background:var(--sim);color:var(--sim-fg)}
+.b-nao{background:var(--nao);color:var(--nao-fg)}
+.b-conf{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);width:100%}
+.b-sec{background:transparent;color:var(--fg);border-color:var(--line);font-size:16px;padding:12px}
+.voltar{align-self:flex-start;background:none;border:none;color:var(--muted);font-family:var(--font-body);font-weight:600;font-size:15px;
+  text-transform:none;letter-spacing:0;padding:0}
+.voltar:hover{color:var(--fg)}
+.placar{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lado{border:2px solid var(--line);border-radius:12px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;gap:4px}
+.lado.vence{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.lado .n{font-family:var(--font-display);font-weight:900;font-size:64px;line-height:1;font-stretch:80%;font-variant-numeric:tabular-nums}
+.lado .q{font-size:15px;color:var(--muted)}
+.lado .qtd{font-weight:600;font-size:17px}
+.resumo{display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:10px}
+.resumo div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.resumo div span:first-child{min-width:0}
+.resumo div span:last-child{white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums}
+details summary{cursor:pointer;color:var(--muted);font-size:15px;font-weight:600}
+.aviso{font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:420px){.botoes{grid-template-columns:1fr}.placar{gap:8px}}
+</style>
+</head>
+<body>
+
+<main class="urna" id="app">
+  <div class="topo"><span id="rotulo">Questionário</span><b id="contador"></b></div>
+  <div class="progresso"><i id="barra"></i></div>
+
+  <section class="tela" id="inicio">
+    <div class="num">?</div>
+    <h1>Não sabe em quem votar ou ainda está em dúvida?</h1>
+    <p>Responda <b>12 perguntas</b> com Sim ou Não. Cada resposta soma um ponto para o <b>22</b> ou para o <b>13</b>. No fim, você vê o placar.</p>
+    <button class="b-conf" id="comecar">Começar</button>
+  </section>
+
+  <section class="tela" id="pergunta" hidden>
+    <div class="num" id="qnum">1</div>
+    <h2 id="qtexto"></h2>
+    <div class="botoes">
+      <button class="b-sim" id="bsim">Sim</button>
+      <button class="b-nao" id="bnao">Não</button>
+    </div>
+    <button class="voltar" id="voltar">← Voltar à anterior</button>
+  </section>
+
+  <section class="tela" id="fim" hidden>
+    <h1 id="titulofim"></h1>
+    <div class="placar">
+      <div class="lado" id="l22"><span class="q">Pontos para</span><span class="n">22</span><span class="qtd" id="p22"></span></div>
+      <div class="lado" id="l13"><span class="q">Pontos para</span><span class="n">13</span><span class="qtd" id="p13"></span></div>
+    </div>
+    <p class="muted" id="frase"></p>
+    <details><summary>Ver minhas respostas</summary><div class="resumo" id="resumo"></div></details>
+    <p class="aviso">Não se esqueça de conferir seu local de votação. Consulte o site oficial do TSE ou o aplicativo e-Título e veja seu local, zona e seção com antecedência.</p>
+    <div class="botoes">
+      <button class="b-conf" id="copiar">Copiar resultado</button>
+      <button class="b-sec" id="refazer">Refazer</button>
+    </div>
+  </section>
+</main>
+
+<script>
+// Cada item: texto da pergunta e quantos pontos vale responder "Sim" (22 ou 13); "Não" vale o outro.
+const PERGUNTAS = [
+  ["Você é a favor de acesso a armas que podem cair na mão de crianças e criminosos?", 22],
+  ["Você acha justo o SUS não oferecer mais tratamentos e vacinação gratuitos?", 22],
+  ["Você é a favor da diminuição do orçamento da Farmácia Popular?", 22],
+  ["Você concorda com a perseguição violenta à Igreja Católica e às religiões de matriz africana?", 22],
+  ["Você é a favor de o Comando Vermelho e as milícias do Rio de Janeiro terem influência direta na Presidência da República?", 22],
+  ["Você concorda em deixar os Estados Unidos explorarem todos os recursos naturais do Brasil, gerando empregos e riquezas pros americanos?", 22],
+  ["Você é a favor da privatização de praias, para que o acesso à praia seja pago?", 22],
+  ["Você é a favor do fim da escala 6x1 e de que o governo deve proteger o trabalhador na relação com o patrão?", 13],
+  ["Você acha justo se aposentar só com 70 anos?", 22],
+  ["Você é a favor do fim do PIX?", 22],
+  ["Você concorda com a venda de empresas como a Petrobras, que gera muitos empregos e lucro?", 22],
+  ["Você concorda que os candidatos à presidência abram seu sigilo bancário e da sua família para o público ter mais transparência?", 13],
+];
+const N = PERGUNTAS.length;
+let i = 0, resp = [];
+const $ = id => document.getElementById(id);
+
+function mostrar(tela){ for (const t of ["inicio","pergunta","fim"]) $(t).hidden = t !== tela; }
+function barra(k){ $("barra").style.width = (100*k/N) + "%"; }
+
+function render(){
+  $("qnum").textContent = i+1;
+  $("qtexto").textContent = PERGUNTAS[i][0];
+  $("contador").textContent = (i+1) + " / " + N;
+  $("rotulo").textContent = "Pergunta";
+  $("voltar").hidden = i === 0;
+  barra(i);
+  mostrar("pergunta");
+}
+
+function responder(sim){
+  const vSim = PERGUNTAS[i][1];
+  resp[i] = { sim, pts: sim ? vSim : (vSim === 22 ? 13 : 22) };
+  i++;
+  if (i < N) render(); else final();
+}
+
+function pontuar(){
+  const p22 = resp.filter(r => r.pts === 22).length;
+  return { p22, p13: N - p22 };
+}
+
+function final(){
+  const { p22, p13 } = pontuar();
+  $("contador").textContent = N + " / " + N;
+  $("rotulo").textContent = "Resultado";
+  barra(N);
+  $("p22").textContent = p22 + (p22 === 1 ? " ponto" : " pontos");
+  $("p13").textContent = p13 + (p13 === 1 ? " ponto" : " pontos");
+  $("l22").classList.toggle("vence", p22 > p13);
+  $("l13").classList.toggle("vence", p13 > p22);
+  let titulo, frase;
+  if (p22 === p13){ titulo = "Empate: " + p22 + " a " + p13; frase = "Suas respostas se dividiram igualmente entre os dois lados."; }
+  else if (p13 > p22){ titulo = "Suas respostas pendem para o 13"; frase = "Em " + p13 + " das " + N + " perguntas você escolheu a opção que soma para o 13."; }
+  else { titulo = "Suas respostas pendem para o 22"; frase = "Em " + p22 + " das " + N + " perguntas você escolheu a opção que soma para o 22."; }
+  $("titulofim").textContent = titulo;
+  $("frase").textContent = frase;
+  const r = $("resumo"); r.innerHTML = "";
+  PERGUNTAS.forEach((q, k) => {
+    const d = document.createElement("div");
+    const a = document.createElement("span"); a.textContent = (k+1) + ". " + q[0];
+    const b = document.createElement("span"); b.textContent = (resp[k].sim ? "Sim" : "Não") + " → " + resp[k].pts;
+    d.append(a, b); r.append(d);
+  });
+  mostrar("fim");
+}
+
+$("comecar").onclick = () => { i = 0; resp = []; render(); };
+$("bsim").onclick = () => responder(true);
+$("bnao").onclick = () => responder(false);
+$("voltar").onclick = () => { if (i > 0){ i--; render(); } };
+$("refazer").onclick = () => { i = 0; resp = []; $("rotulo").textContent = "Questionário"; $("contador").textContent = ""; barra(0); mostrar("inicio"); };
+$("copiar").onclick = async () => {
+  const { p22, p13 } = pontuar();
+  const txt = "Questionário 22 ou 13 — meu resultado: 22 = " + p22 + " pontos, 13 = " + p13 + " pontos. Faça o seu: " + location.href.split("#")[0];
+  const b = $("copiar"), antes = b.textContent;
+  try { await navigator.clipboard.writeText(txt); b.textContent = "Copiado!"; }
+  catch (e) { b.textContent = "Selecione e copie:"; const p = document.createElement("p"); p.className = "muted"; p.textContent = txt; b.after(p); }
+  setTimeout(() => { b.textContent = antes; }, 2000);
+};
+document.addEventListener("keydown", e => {
+  if ($("pergunta").hidden) return;
+  if (e.key === "s" || e.key === "S" || e.key === "1") responder(true);
+  if (e.key === "n" || e.key === "N" || e.key === "2") responder(false);
+});
+</script>
+
+</body>
+</html>
